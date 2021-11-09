@@ -1,0 +1,1 @@
+listtabs =['', '/home/covid/Desktop/Project/Python/Python_IDE/save_load.py']
