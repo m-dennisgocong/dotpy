@@ -5,40 +5,29 @@ import save_load as sl
 from tkinter import ttk,filedialog,messagebox
 from tkinter.filedialog import asksaveasfilename,askopenfilename
 
-class TextFrame(tk.Frame):
+class TextFrame:
     def __init__(self,container):
-        super().__init__(container)
-
         #self.columnconfigure(0,weight = 1)
         #self.grid(row=0,column=1,sticky="NSEW")
-        self.nb = ttk.Notebook(container)
+        self.textFrame = ttk.Frame(container).grid(row=0,column=1,sticky="ENSW")
+        self.nb = ttk.Notebook(self.textFrame)
         self.nb.grid(column=1, row=0, sticky="NEWS")
-
-        self.text_result = tk.Text(container)
+        self.text_result = tk.Text(self.textFrame)
         self.text_result.grid(column=1, row=1, sticky="NEWS")
 
-class TreeFrame(tk.Frame):
+class TreeFrame:
     def __init__(self,container):
-        super().__init__(container)
-        self.grid_rowconfigure(0,weight = 1)
-
-        self.grid(row=0,column=0,rowspan=2,sticky="NSEW")
-        self.tree = ttk.Treeview(self, show="tree")
+        self.treeFrame = ttk.Frame(container)
+        self.treeFrame.grid(row=0,column=0,rowspan=2,sticky="WNES")
+        self.tree = ttk.Treeview(self.treeFrame, show="tree")
         style = ttk.Style()
-        style.configure("Treeview",background="azure2",foreground="black",fieldbackground="azure2")\
-
-    def hidethis(self):
-        self.grid_remove()
-        #self.tree.grid_remove()
-        #print("hide")
-    def showthis(self):
-        self.grid(row=0,column=0,rowspan=2,sticky="NSEW")
-        #self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
-        #print("show")
+        style.configure("Treeview",background="azure2",foreground="black",fieldbackground="azure2")
 
 class FrameController(TextFrame, TreeFrame):
     def __init__(self, main):
-        super().__init__(main)
+        TextFrame.__init__(self,main)
+        TreeFrame.__init__(self,main)
+
         self.content_data = dict()
     #create text in nb
     def create_file(self,content = "",title="Untitled", filepath = ""):
@@ -80,8 +69,8 @@ class FrameController(TextFrame, TreeFrame):
                         traverse_dir(id,full_path)
             traverse_dir(node,path)
                 #self.frame_area.tree.configure(yscroll = self.frame_area.ybar.set)
-            self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
-            #self.tree.pack(expand=True,fill=tk.BOTH)
+            #self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
+            self.tree.pack(expand=True,fill=tk.BOTH)
 
                 #self.frame_area.ybar.grid(row=0,column=0,rowspan=2,sticky="WNES")
         except FileNotFoundError as error:
@@ -107,13 +96,9 @@ class FrameController(TextFrame, TreeFrame):
 
     def show_hide_files(self, checker):
         if checker.get() == True:
-            #self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
-            self.showthis()
-            #TreeFrame(self.grid(column=0,sticky="NEWS",row=0,rowspan=2))
+            self.treeFrame.grid(column=0,sticky="NEWS",row=0,rowspan=2)
         elif checker.get() == False:
-            #self.tree.grid_remove()
-            #TreeFrame(self.grid_remove())
-            self.hidethis()
+            self.treeFrame.grid_remove()
 
 
     # get the selected tab in notebook
