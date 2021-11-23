@@ -5,36 +5,41 @@ import save_load as sl
 from tkinter import ttk,filedialog,messagebox
 from tkinter.filedialog import asksaveasfilename,askopenfilename
 
-class MainFrame(tk.Frame):
+class TextFrame(tk.Frame):
     def __init__(self,container):
         super().__init__(container)
-        self.tree = ttk.Treeview(container, show="tree")
-        # store {key notebook [content/code, filename, filepath]}
-        self.content_data = dict()
 
-        #self.ybar = ttk.Scrollbar(container,orient = "vertical", command = self.tree.yview)
-        style = ttk.Style()
-        style.configure("Treeview",background="azure2",foreground="black",fieldbackground="azure2")
-
+        #self.columnconfigure(0,weight = 1)
+        #self.grid(row=0,column=1,sticky="NSEW")
         self.nb = ttk.Notebook(container)
+        self.nb.grid(column=1, row=0, sticky="NEWS")
 
-        """
-        welcome_text = tk.StringVar()
-        self.welcome_title = tk.Label(self.nb, textvariable=welcome_text,justify="center", height="25", width="25")
-        welcome_text.set("Welcome \nto \ndotpy")
-        """
-        #need to get back here after done on save method
-        #text_area = tk.Text(self.nb, wrap = "none")
-        #self.nb.add(text_area)
-        self.nb.grid(column=1, row=0, sticky="WNES")
+        self.text_result = tk.Text(container)
+        self.text_result.grid(column=1, row=1, sticky="NEWS")
 
-        text_result = tk.Text(container)
-        text_result.grid(column=1, row=1, sticky="WNES")
-        self.grid(column=0, row=0,sticky="NEWS")
+class TreeFrame(tk.Frame):
+    def __init__(self,container):
+        super().__init__(container)
+        self.grid_rowconfigure(0,weight = 1)
 
-class FrameController(MainFrame):
+        self.grid(row=0,column=0,rowspan=2,sticky="NSEW")
+        self.tree = ttk.Treeview(self, show="tree")
+        style = ttk.Style()
+        style.configure("Treeview",background="azure2",foreground="black",fieldbackground="azure2")\
+
+    def hidethis(self):
+        self.grid_remove()
+        #self.tree.grid_remove()
+        #print("hide")
+    def showthis(self):
+        self.grid(row=0,column=0,rowspan=2,sticky="NSEW")
+        #self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
+        #print("show")
+
+class FrameController(TextFrame, TreeFrame):
     def __init__(self, main):
         super().__init__(main)
+        self.content_data = dict()
     #create text in nb
     def create_file(self,content = "",title="Untitled", filepath = ""):
         text_area = tk.Text(self.nb, wrap="none")
@@ -76,6 +81,7 @@ class FrameController(MainFrame):
             traverse_dir(node,path)
                 #self.frame_area.tree.configure(yscroll = self.frame_area.ybar.set)
             self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
+            #self.tree.pack(expand=True,fill=tk.BOTH)
 
                 #self.frame_area.ybar.grid(row=0,column=0,rowspan=2,sticky="WNES")
         except FileNotFoundError as error:
@@ -98,6 +104,17 @@ class FrameController(MainFrame):
                 pass
         except:
             pass
+
+    def show_hide_files(self, checker):
+        if checker.get() == True:
+            #self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
+            self.showthis()
+            #TreeFrame(self.grid(column=0,sticky="NEWS",row=0,rowspan=2))
+        elif checker.get() == False:
+            #self.tree.grid_remove()
+            #TreeFrame(self.grid_remove())
+            self.hidethis()
+
 
     # get the selected tab in notebook
     def select_nb_tab(self):
@@ -125,7 +142,7 @@ class FrameController(MainFrame):
                 file.write(content)
 
         except(AttributeError, FileNotFoundError, TypeError):
-            print("Save operation cancelled")
+            #print("Save operation cancelled")
             return
 
         self.nb.tab("current",text=filename)
@@ -202,6 +219,18 @@ class FrameController(MainFrame):
             f.write("listtabs =" + str(savetabs))
         return True
 
+    def run(self):
+        slctedtab = self.select_nb_tab()
+        filepath = self.content_data[str(slctedtab)][2]
+        if filepath == "":
+            self.save_as()
+            return
+        command = f"python3 {filepath}" #python3
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell= True)
+        output, error = process.communicate()
+        self.text_result.insert("end",output)
+        self.text_result.insert("end", error)
+
 
 class MenuBar(tk.Menu):
     def __init__(self, main):
@@ -243,6 +272,12 @@ class MenuBar(tk.Menu):
         self.run_bar.add_command(label = "Run")
         self.add_cascade(label = "Run", menu = self.run_bar)
 
+        #View tree Bar
+        self.view_bar = tk.Menu(self,tearoff=0)
+        self.view_bar.add_checkbutton(label = "Folder")
+        self.add_cascade(label = "View", menu = self.view_bar)
+
+
 class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -252,10 +287,23 @@ class MainApp(tk.Tk):
 
         # layout on the root/main
         self.columnconfigure(0,weight = 1)
-        # create instance object inherit from FrameController(MainFrame)
+        self.columnconfigure(1,weight = 5)
+        # create instance object inherit from FrameController
         self.frame_control = FrameController(self)
 
-        # create instance object inherit from MenuBar
+        #use the listtabs of save_load module
+        store = sl.listtabs #list of tabs to be load
+
+        for filepath in sl.listtabs:
+            if filepath == '': #create an emty text if the listtabs is empty
+                self.creat_f()
+            else:
+                filename = os.path.basename(filepath) #get the filename
+                with open(filepath, "r") as file: #read inside of the file
+                    code = file.read()
+                self.frame_control.create_file(code,filename,filepath) #create the tab
+
+        # create MenuBar
         self.menu_bar = MenuBar(self)
         self.config(menu = self.menu_bar)
 
@@ -273,12 +321,25 @@ class MainApp(tk.Tk):
         self.menu_bar.edit_bar.entryconfig(3, command=self.creat_f , accelerator = "Ctrl+V")
         #self.menu_bar.edit_bar.entryconfig(5, commdand=self.creat_t)
         self.menu_bar.edit_bar.entryconfig(6, command=self.creat_f , accelerator = "Ctrl+A")
-
-        self.menu_bar.run_bar.entryconfig(0, command=self.creat_f, accelerator = "Ctrl+Shift+B")
-
+        #ran bar command
+        self.menu_bar.run_bar.entryconfig(0, command=self.run_file, accelerator = "Ctrl+r")
+        #select from Treeview
         self.frame_control.tree.bind("<Double-1>", lambda e: self.frame_control.select_file())
+
+        self.bind("<Control-n>", lambda e: self.creat_f())
         self.bind("<KeyPress>", lambda e: self.frame_control.change_checker())
-        self.bind("<Control-w>", lambda e: self.frame_control.close_current_tab())
+        self.bind("<Control-w>", lambda e: self.close_tab())
+        self.bind("<Control-r>", lambda e: self.run_file())
+
+        #result code
+        self.frame_control.text_result.bind("<Key>", lambda e: "break")
+        self.frame_control.text_result.bind("<Button -1>", lambda e: "break")
+
+        #create variable for add_checkbutton
+        self.checkVar = tk.BooleanVar()
+        self.checkVar.set(True) #set the check button to true
+        self.menu_bar.view_bar.entryconfig(0, command=self.show_or_hide, var=self.checkVar,onvalue=True,offvalue=False)
+
         self.protocol("WM_DELETE_WINDOW",self.quit)
 
     def open_f(self):
@@ -296,6 +357,10 @@ class MainApp(tk.Tk):
     def quit(self):
         if self.frame_control.confirm_quit(self) is True:
             self.destroy()
+    def run_file(self):
+        self.frame_control.run()
+    def show_or_hide(self):
+        self.frame_control.show_hide_files(self.checkVar)
 
 if __name__ == "__main__":
     main = MainApp()
