@@ -7,8 +7,6 @@ from tkinter.filedialog import asksaveasfilename,askopenfilename
 
 class TextFrame:
     def __init__(self,container):
-        #self.columnconfigure(0,weight = 1)
-        #self.grid(row=0,column=1,sticky="NSEW")
         self.textFrame = ttk.Frame(container).grid(row=0,column=1,sticky="ENSW")
         self.nb = ttk.Notebook(self.textFrame)
         self.nb.grid(column=1, row=0, sticky="NEWS")
@@ -25,32 +23,34 @@ class TreeFrame:
 
 class FrameController(TextFrame, TreeFrame):
     def __init__(self, main):
+        #super().__init__(main)
         TextFrame.__init__(self,main)
         TreeFrame.__init__(self,main)
-
         self.content_data = dict()
+
     #create text in nb
     def create_file(self,content = "",title="Untitled", filepath = ""):
+
         text_area = tk.Text(self.nb, wrap="none")
         text_area.insert("1.0",content)
         self.nb.add(text_area, text=title)
-        self.content_data[str(text_area)] = [hash(content),self.nb.tab("current")["text"], filepath]
         self.nb.select(text_area)
+        self.content_data[str(text_area)] = [hash(content),self.nb.tab("current")["text"], filepath]
 
     #open file
     def open_file(self):
-        path = askopenfilename(filetypes=[("Python Files", "*.py")])
+        path = askopenfilename(filetypes=[("Python Files","*.py")])
         filename = os.path.basename(path)
-
         #check if the file already open
         for tab in self.nb.tabs():
-            currenttab = self.nb.nametowidget(tab)
-            if filename == self.content_data[str(currenttab)][1] and path == self.content_data[str(currenttab)][2]:
-                self.nb.select(currenttab)
-
+            currenttab = main.nametowidget(tab)
+            if filename == self.content_data[str(tab)][1] and path == self.content_data[str(tab)][2]:
+                self.nb.select(tab)
+                return
         with open(path, "r") as file:
             code = file.read()
         self.create_file(code,filename,path)
+
 
     # open folder
     def openfolder(self):
@@ -80,24 +80,27 @@ class FrameController(TextFrame, TreeFrame):
     def select_file(self):
         try:
             curItem = self.tree.focus()
-            sltpath = self.tree.item(curItem)["values"]
-            file_selected = os.path.abspath(sltpath[0])
-            name_of_file = self.tree.item(curItem)["text"]
-            filename = os.path.basename(file_selected)
+            sltpath = self.tree.item(curItem)["values"]# the value/path of the selected file []
+            file_selected = os.path.abspath(sltpath[0])# get the path
+            name_of_file = self.tree.item(curItem)["text"] #text name of file
+            #filename = os.path.basename(file_selected)
             isfile = os.path.isdir(file_selected)
-            if not isfile:
+            if not isfile: # check if the selected file in treeview is not directory file
+                for tab in self.nb.tabs(): #check if the file is already in the tab
+                    #currenttab = main.nametowidget(tab)
+                    if name_of_file == self.content_data[str(tab)][1] and file_selected == self.content_data[str(tab)][2]:
+                        self.nb.select(tab) #bring the to the tab that already open
+                        return
                 with open(file_selected,"r") as file:
                     code = file.read()
-                self.create_file(code,filename,file_selected)
-            else:
-                pass
+                self.create_file(code,name_of_file,file_selected)
         except:
             pass
 
     def show_hide_files(self, checker):
-        if checker.get() == True:
+        if checker.get():
             self.treeFrame.grid(column=0,sticky="NEWS",row=0,rowspan=2)
-        elif checker.get() == False:
+        else:
             self.treeFrame.grid_remove()
 
 
@@ -277,11 +280,11 @@ class MainApp(tk.Tk):
         self.frame_control = FrameController(self)
 
         #use the listtabs of save_load module
-        store = sl.listtabs #list of tabs to be load
 
+        store = sl.listtabs #list of tabs to be load
         for filepath in sl.listtabs:
-            if filepath == '': #create an emty text if the listtabs is empty
-                self.creat_f()
+            if filepath == "": #create an emty text if the listtabs is empty
+                self.frame_control.create_file()
             else:
                 filename = os.path.basename(filepath) #get the filename
                 with open(filepath, "r") as file: #read inside of the file
@@ -323,7 +326,7 @@ class MainApp(tk.Tk):
         #create variable for add_checkbutton
         self.checkVar = tk.BooleanVar()
         self.checkVar.set(True) #set the check button to true
-        self.menu_bar.view_bar.entryconfig(0, command=self.show_or_hide, var=self.checkVar,onvalue=True,offvalue=False)
+        self.menu_bar.view_bar.entryconfig(0, command=self.show_or_hide, var=self.checkVar)
 
         self.protocol("WM_DELETE_WINDOW",self.quit)
 
