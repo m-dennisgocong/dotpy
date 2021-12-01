@@ -1,11 +1,13 @@
 import os
 import subprocess
+
 import tkinter as tk
 import save_load as sl
-from tkinter import ttk,filedialog,messagebox
-from tkinter.filedialog import asksaveasfilename,askopenfilename
 
-# class for Editor Text and Result Text frame
+from tkinter import ttk,messagebox
+from tkinter.filedialog import asksaveasfilename,askopenfilename,askdirectory
+
+# class for editor and result frame
 class TextFrame:
     def __init__(self,main):
         self.textFrame = ttk.Frame(main).grid(row=0,column=1,sticky="NEWS")
@@ -27,18 +29,20 @@ class TreeFrame:
 # class for frame control
 class FrameController(TextFrame, TreeFrame):
     def __init__(self, main):
-        #super().__init__(main)
+        #super().__init__(main) # I can't access TreeFrame attribute when using super()
         TextFrame.__init__(self,main)
         TreeFrame.__init__(self,main)
-        self.content_data = dict()
+        self.content_data = dict() #dictionay for [text] = [hash,tabname,filepath]
 
     #create text in nb
     def create_file(self,content = "",title="Untitled", filepath = ""):
-
         text_area = tk.Text(self.nb, wrap="none", undo=True)
         text_area.insert("1.0",content)
-        self.nb.add(text_area, text=title)
-        self.nb.select(text_area)
+
+        self.nb.add(text_area, text=title) # add to notebook tab
+        self.nb.select(text_area) # this will bring you the latest add tab
+
+        # collect the data using the content_data dictionay
         self.content_data[str(text_area)] = [hash(content),self.nb.tab("current")["text"], filepath]
 
     #open file
@@ -47,7 +51,6 @@ class FrameController(TextFrame, TreeFrame):
         filename = os.path.basename(path)
         #check if the file already open
         for tab in self.nb.tabs():
-            #currenttab = main.nametowidget(tab)
             if filename == self.content_data[str(tab)][1] and path == self.content_data[str(tab)][2]:
                 self.nb.select(tab)
                 return
@@ -57,7 +60,7 @@ class FrameController(TextFrame, TreeFrame):
 
     # open folder
     def openfolder(self):
-        directory = filedialog.askdirectory()
+        directory = askdirectory()
         if directory: #to avoid error when cancelation
             try:
                 path=os.path.abspath(directory)
@@ -72,11 +75,9 @@ class FrameController(TextFrame, TreeFrame):
                         if isdir:
                             traverse_dir(id,full_path)
                 traverse_dir(node,path)
-                    #self.frame_area.tree.configure(yscroll = self.frame_area.ybar.set)
                 #self.tree.grid(column=0,sticky="NEWS",row=0,rowspan=2)
                 self.tree.pack(expand=True,fill=tk.BOTH)
 
-                    #self.frame_area.ybar.grid(row=0,column=0,rowspan=2,sticky="WNES")
             except FileNotFoundError as error:
                 showerror(title='Error', message=error)
 
@@ -104,7 +105,7 @@ class FrameController(TextFrame, TreeFrame):
     # check the value of checkbutton
     def show_hide_files(self, checker):
 
-        if checker.get():
+        if checker.get(): #if True show the tree frame
             self.treeFrame.grid(column=0,sticky="NEWS",row=0,rowspan=2)
         else:
             self.treeFrame.grid_remove()
@@ -114,21 +115,21 @@ class FrameController(TextFrame, TreeFrame):
         selected_nb = main.nametowidget(self.nb.select())
         return selected_nb
 
-    #checker for changes
+    # checker for changes
     def change_checker(self):
         current = self.select_nb_tab()
         content = current.get("1.0","end-1c")
-        name = self.nb.tab("current")["text"]
+        name = self.nb.tab("current")["text"] # get current tab name
         if hash(content) != self.content_data[str(current)][0]:
             if name[-1] != "*":
-                self.nb.tab("current", text = name + "*")
+                self.nb.tab("current", text = name + "*") # add * if changes were made
         else:
             self.nb.tab("current",text=name[:-1])
 
-    #save as file
+    # save as file
     def save_as(self):
-        file_path = asksaveasfilename(filetypes=[("Python Files", "*.py")])
 
+        file_path = asksaveasfilename(filetypes=[("Python Files", "*.py")])
         try:
             filename = os.path.basename(file_path)
             text_code = self.select_nb_tab()
@@ -140,63 +141,61 @@ class FrameController(TextFrame, TreeFrame):
             #print("Save operation cancelled")
             return
 
-        self.nb.tab("current",text=filename)
+        self.nb.tab("current",text=filename) # change name of tab
         self.content_data[str(text_code)] = [hash(content),self.nb.tab("current")["text"],file_path]
 
-    #save current file
+    # save current file
     def save_file(self):
         current_tab = self.select_nb_tab()
         name = self.nb.tab("current")["text"]
 
-        #check if not yet save
+        # if file path is not empty the file already exist
         if self.content_data[str(current_tab)][2] != "":
-            content = current_tab.get("1.0","end-1c")
+            content = current_tab.get("1.0","end-1c") # get the updated text/file
             filepath = self.content_data[str(current_tab)][2]
             with open(filepath, "w") as file:
-                file.write(content)
+                file.write(content) # save the latest update
             self.content_data[str(current_tab)][0] = hash(content)
         else:
             self.save_as()
         #self.check_for_changes()
 
-    #close the current selected tab
+    # close the current selected tab
     def close_current_tab(self):
+
         current = self.select_nb_tab()
         if self.current_tab_nsave() and not self.confirm_close():
             return
-        if len(self.nb.tabs()) == 1:#create notebook if close all tab
+        if len(self.nb.tabs()) == 1:# create notebook if close all tab
             self.create_file()
         self.nb.forget(current)
 
-    #check if current tab not save
+    # check if current tab not save
     def current_tab_nsave(self):
+
         get_content_text = self.select_nb_tab()
         content = get_content_text.get("1.0","end-1c")
-        return hash(content) != self.content_data[str(get_content_text)][0] #return true if tab is not save_as
+        return hash(content) != self.content_data[str(get_content_text)][0] # return true if tab is not save_as
 
-    #check confim to close
+    # check confim to close
     def confirm_close(self):
         return messagebox.askyesno(
             message="Your changes will be lost if you close without saving. Are you sure you want to close?",
             icon="question",
             title="Unsave changes"
         )
-    # select all text area
-        """
+
+    # selecl all text area
     def select_all(self):
-        get_content_text = self.select_nb_tab()
-        get_content_text.tag_add("start","1.0","end")
-        #get_content_text.mark_set("INSERT", "1.0")
-        #get_content_text.see("INSERT")
-        get_content_text.tag_configure("start",background="black",foreground="white")
-        return "break"
-        """
-    def select_all(self):
+
         get_content_text = self.select_nb_tab()
         get_content_text.tag_add("sel","1.0","end")
         #get_content_text.tag_configure("start",background="black",foreground="white")
         return "break"
+
+    # clear or delete all
     def delete_all_text(self):
+
         get_content_text = self.select_nb_tab()
         get_content_text.delete("1.0","end")
 
@@ -233,18 +232,40 @@ class FrameController(TextFrame, TreeFrame):
             f.write("listtabs =" + str(savetabs))
         return True
 
-    #run the code
+    # run the code
     def run(self):
+
         slctedtab = self.select_nb_tab()
-        filepath = self.content_data[str(slctedtab)][2]
-        if filepath == "":
+        filepath = self.content_data[str(slctedtab)][2] # get the path of current tab
+        if filepath == "": # if path is empty, save it first!
             self.save_as()
             return
-        command = f"python3 {filepath}" #python3
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell= True)
+
+        command = f"python3 {filepath}" #
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell= True,text = True)
         output, error = process.communicate()
-        self.text_result.insert("end",output)
-        self.text_result.insert("end", error)
+
+        # use the returncode method to know if the code have error
+        if process.returncode:
+            error_list = error.split(",") # the error line is always on index 1
+            error_line = error_list[1][-1:] # get the number of the error line
+            #print(error_list)
+            #print(error_line)
+            self.highlight_error(error_line) # pass the number of the error line
+
+        # display the output/error using the text_result attribute
+        self.text_result.insert("1.0",output) # insert always on first line
+        self.text_result.insert("1.0", error) # insert always on first line
+
+    # hightlight the error
+    def highlight_error(self, error_line):
+
+        start = f"{error_line}.0" # position the start line.0
+        end = f"{error_line}.end" # position the end line.end
+
+        get_content_text = self.select_nb_tab()
+        get_content_text.tag_add("error_red",start,end) # use the start & end, and tag it as error_red
+        get_content_text.tag_configure("error_red",background="red",foreground="white") #
 
 # class for menu
 class MenuBar(tk.Menu):
@@ -256,7 +277,7 @@ class MenuBar(tk.Menu):
         "Close Tab", "Quit"]
 
         # create file bar menu button
-        self.file_bar = tk.Menu(main, tearoff=0) # tearoff for no line
+        self.file_bar = tk.Menu(main, tearoff=0)
 
         # add the file_list to the file_bar menu
         for i in file_list:
@@ -270,7 +291,7 @@ class MenuBar(tk.Menu):
         self.file_bar.insert_separator(7)
 
         # edit bar list
-        edit_list = ["Undo","Redo","Cut","Copy","Paste","Delete","Select All"]
+        edit_list = ["Undo","Redo","Cut","Copy","Paste","Clear All","Select All"]
 
         # create edit bar
         self.edit_bar = tk.Menu(self,tearoff=0)
@@ -341,16 +362,16 @@ class MainApp(tk.Tk):
         self.menu_bar.edit_bar.entryconfig(8, command= self.select_all, accelerator = "Ctrl+A")
         #ran bar command
         self.menu_bar.run_bar.entryconfig(0, command=self.run_file, accelerator = "Ctrl+r")
-
-        #self.frame_control.tree.bind("<Double-1>", lambda e: self.frame_control.select_file())
-
+        #select from tree view bind
+        self.frame_control.tree.bind("<Double-1>", lambda e: self.frame_control.select_file())
+        # bind control
         self.bind("<Control-n>", lambda e: self.creat_f())
         self.bind("<KeyPress>", lambda e: self.frame_control.change_checker())
         self.bind("<Control-w>", lambda e: self.close_tab())
         self.bind("<Control-r>", lambda e: self.run_file())
         self.bind("<Control-a>", lambda e: self.select_all())
 
-        #result code
+        #result code disble
         self.frame_control.text_result.bind("<Key>", lambda e: "break")
         self.frame_control.text_result.bind("<Button -1>", lambda e: "break")
 
@@ -358,7 +379,7 @@ class MainApp(tk.Tk):
         self.checkVar = tk.BooleanVar()
         self.checkVar.set(True) #set the check button to true
         self.menu_bar.view_bar.entryconfig(0, command=self.show_or_hide, var=self.checkVar)
-
+        #quit
         self.protocol("WM_DELETE_WINDOW",self.quit)
 
     # file bar method
@@ -393,6 +414,8 @@ class MainApp(tk.Tk):
         self.frame_control.select_all()
     def delete_all(self):
         self.frame_control.delete_all_text()
+    def rightclick(self):
+        print("right")
 
     # run bar method
     def run_file(self):
@@ -401,7 +424,6 @@ class MainApp(tk.Tk):
     # view bar method
     def show_or_hide(self):
         self.frame_control.show_hide_files(self.checkVar)
-
 
 if __name__ == "__main__":
     main = MainApp()
