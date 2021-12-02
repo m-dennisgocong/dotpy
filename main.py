@@ -128,9 +128,8 @@ class FrameController(TextFrame, TreeFrame):
 
     # save as file
     def save_as(self):
-
-        file_path = asksaveasfilename(filetypes=[("Python Files", "*.py")])
         try:
+            file_path = asksaveasfilename(filetypes=[("Python Files", "*.py")])
             filename = os.path.basename(file_path)
             text_code = self.select_nb_tab()
             content = text_code.get("1.0","end-1c")
@@ -138,8 +137,7 @@ class FrameController(TextFrame, TreeFrame):
                 file.write(content)
 
         except(AttributeError, FileNotFoundError, TypeError):
-            #print("Save operation cancelled")
-            return
+            showerror(title='Error', message=error)
 
         self.nb.tab("current",text=filename) # change name of tab
         self.content_data[str(text_code)] = [hash(content),self.nb.tab("current")["text"],file_path]
@@ -247,11 +245,9 @@ class FrameController(TextFrame, TreeFrame):
 
         # use the returncode method to know if the code have error
         if process.returncode:
-            error_list = error.split(",") # the error line is always on index 1
-            error_line = error_list[1][-1:] # get the number of the error line
-            #print(error_list)
-            #print(error_line)
-            self.highlight_error(error_line) # pass the number of the error line
+            print(error)
+            index = error.find("line")
+            self.highlight_error(error[index+5]) # pass the number of the error line
 
         # display the output/error using the text_result attribute
         self.text_result.insert("1.0",output) # insert always on first line
@@ -262,10 +258,10 @@ class FrameController(TextFrame, TreeFrame):
 
         start = f"{error_line}.0" # position the start line.0
         end = f"{error_line}.end" # position the end line.end
-
+        
         get_content_text = self.select_nb_tab()
-        get_content_text.tag_add("error_red",start,end) # use the start & end, and tag it as error_red
-        get_content_text.tag_configure("error_red",background="red",foreground="white") #
+        get_content_text.tag_add("error_area",start,end) # use the start & end, and tag it as error_red
+        get_content_text.tag_configure("error_area",background="red",foreground="white") #
 
 # class for menu
 class MenuBar(tk.Menu):
