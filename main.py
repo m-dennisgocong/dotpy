@@ -245,7 +245,7 @@ class FrameController(TextFrame, TreeFrame):
 
         # use the returncode method to know if the code have error
         if process.returncode:
-            print(error)
+            #print(error)
             index = error.find("line")
             self.highlight_error(error[index+5]) # pass the number of the error line
 
@@ -258,7 +258,7 @@ class FrameController(TextFrame, TreeFrame):
 
         start = f"{error_line}.0" # position the start line.0
         end = f"{error_line}.end" # position the end line.end
-        
+
         get_content_text = self.select_nb_tab()
         get_content_text.tag_add("error_area",start,end) # use the start & end, and tag it as error_red
         get_content_text.tag_configure("error_area",background="red",foreground="white") #
