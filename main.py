@@ -248,6 +248,8 @@ class FrameController(TextFrame, TreeFrame):
             #print(error)
             index = error.find("line")
             self.highlight_error(error[index+5]) # pass the number of the error line
+        else:
+            self.remove_hightlight()
 
         # display the output/error using the text_result attribute
         self.text_result.insert("1.0",output) # insert always on first line
@@ -255,14 +257,17 @@ class FrameController(TextFrame, TreeFrame):
 
     # hightlight the error
     def highlight_error(self, error_line):
-
         start = f"{error_line}.0" # position the start line.0
         end = f"{error_line}.end" # position the end line.end
 
         get_content_text = self.select_nb_tab()
         get_content_text.tag_add("error_area",start,end) # use the start & end, and tag it as error_red
-        get_content_text.tag_configure("error_area",background="red",foreground="white") #
+        get_content_text.tag_configure("error_area",background="red",foreground="white")
 
+    def remove_hightlight(self):
+        get_content_text = self.select_nb_tab()
+        get_content_text.tag_delete("error_area")
+        
 # class for menu
 class MenuBar(tk.Menu):
     def __init__(self, main):
