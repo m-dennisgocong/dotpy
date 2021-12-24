@@ -267,7 +267,7 @@ class FrameController(TextFrame, TreeFrame):
     def remove_hightlight(self):
         get_content_text = self.select_nb_tab()
         get_content_text.tag_delete("error_area")
-        
+
 # class for menu
 class MenuBar(tk.Menu):
     def __init__(self, main):
@@ -363,14 +363,15 @@ class MainApp(tk.Tk):
         self.menu_bar.edit_bar.entryconfig(8, command= self.select_all, accelerator = "Ctrl+A")
         #ran bar command
         self.menu_bar.run_bar.entryconfig(0, command=self.run_file, accelerator = "Ctrl+r")
-        #select from tree view bind
-        self.frame_control.tree.bind("<Double-1>", lambda e: self.frame_control.select_file())
+
         # bind control
         self.bind("<Control-n>", lambda e: self.creat_f())
         self.bind("<KeyPress>", lambda e: self.frame_control.change_checker())
         self.bind("<Control-w>", lambda e: self.close_tab())
         self.bind("<Control-r>", lambda e: self.run_file())
         self.bind("<Control-a>", lambda e: self.select_all())
+        #select from tree view bind
+        self.frame_control.tree.bind("<Double-1>", lambda e: self.frame_control.select_file())
 
         #result code disble
         self.frame_control.text_result.bind("<Key>", lambda e: "break")
@@ -380,6 +381,7 @@ class MainApp(tk.Tk):
         self.checkVar = tk.BooleanVar()
         self.checkVar.set(True) #set the check button to true
         self.menu_bar.view_bar.entryconfig(0, command=self.show_or_hide, var=self.checkVar)
+
         #quit
         self.protocol("WM_DELETE_WINDOW",self.quit)
 
