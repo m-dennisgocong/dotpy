@@ -1,4 +1,4 @@
-<img src = "images/logo.png" width="100">
+<img src = "images/logo.png">
 # Dotpy
 
 dotpy - is an IDE application for python 3, build using Tkinter.
