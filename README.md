@@ -1,3 +1,4 @@
+<img src = "images/logo.png" width="100">
 # Dotpy
 
 dotpy - is an IDE application for python 3, build using Tkinter.
@@ -24,4 +25,3 @@ dotpy - is an IDE application for python 3, build using Tkinter.
 - tkinter
 - subprocess
 - save_load
-
