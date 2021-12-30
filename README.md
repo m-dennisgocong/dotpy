@@ -36,5 +36,5 @@ Go to the project directory
 ```
 
 ## Screenshots
-<img src = "images/screenshot01.png" height = "300">
-<img src = "images/screenshot02.png" height = "300">
+<img src = "images/screenshot01.png">
+<img src = "images/screenshot02.png">
