@@ -1,6 +1,6 @@
 <img src = "images/banner.png">
-dotpy - is an IDE application for Python 3, build using Tkinter GUI toolkit. This project is inspired
-        by Python IDLE also written in Python and Tkinter GUI toolkit.
+dotpy is an IDE application for Python 3, build using Tkinter GUI toolkit. This project is inspired by Python IDLE also written in Python and Tkinter GUI toolkit.
+
 ## Features include:
 
 - Creating new file, opening existing file, editing and saving file.
