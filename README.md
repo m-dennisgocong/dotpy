@@ -1,6 +1,6 @@
-<img src = "images/logo.png">
-dotpy - is an IDE application for python 3, build using Tkinter.
-
+<img src = "images/banner.png">
+dotpy - is an IDE application for Python 3, build using Tkinter GUI toolkit. This project is inspired
+        by Python IDLE also written in Python and Tkinter GUI toolkit.
 ## Features include:
 
 - Creating new file, opening existing file, editing and saving file.
@@ -21,4 +21,20 @@ dotpy - is an IDE application for python 3, build using Tkinter.
 - os
 - tkinter
 - subprocess
-- save_load
+
+## Run Locally
+
+Clone the project
+
+```bash
+  git clone https://link-to-project
+```
+Go to the project directory
+
+```bash
+  cd my-project
+```
+
+## Screenshots
+<img src = "images/screenshot01.png" height = "300">
+<img src = "images/screenshot02.png" height = "300">
