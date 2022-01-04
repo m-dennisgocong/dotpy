@@ -27,14 +27,18 @@ dotpy is an IDE application for Python 3, build using Tkinter GUI toolkit. This 
 Clone the project
 
 ```bash
-  git clone https://link-to-project
+  git clone https://github.com/m-dennisgocong/dotpy.git
 ```
 Go to the project directory
 
 ```bash
-  cd my-project
+  cd dotpy
 ```
+python3  
 
 ## Screenshots
 <img src = "images/screenshot01.png">
 <img src = "images/screenshot02.png">
+
+## Contribution
+If you find any bug in the code or have any improvements in mind feel free to generate a pull request.
