@@ -34,8 +34,11 @@ Go to the project directory
 ```bash
   cd dotpy
 ```
-python3  
+Run the file
 
+```bash
+  python3 dotpy.py
+```
 ## Screenshots
 <img src = "images/screenshot01.png">
 <img src = "images/screenshot02.png">
