@@ -39,6 +39,9 @@ Run the file
 ```bash
   python3 dotpy.py
 ```
+## Dependency
+Surely all the modules are preinstall with Python installer, if not you can install them manually using pip install.
+
 ## Screenshots
 <img src = "images/screenshot01.png">
 <img src = "images/screenshot02.png">
