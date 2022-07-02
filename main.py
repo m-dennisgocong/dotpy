@@ -7,7 +7,6 @@ import save_load as sl
 from tkinter import ttk,messagebox
 from tkinter.filedialog import asksaveasfilename,askopenfilename,askdirectory
 
-# class for editor and result frame
 class TextFrame:
     def __init__(self,main):
         self.textFrame = ttk.Frame(main).grid(row=0,column=1,sticky="NEWS")
@@ -17,7 +16,6 @@ class TextFrame:
         self.text_result = tk.Text(self.resultFrame)
         self.text_result.grid(column=1, row=1, sticky="NEWS")
 
-# class for tree view frame
 class TreeFrame:
     def __init__(self,main):
         self.treeFrame = ttk.Frame(main)
@@ -26,7 +24,6 @@ class TreeFrame:
         style = ttk.Style()
         style.configure("Treeview",background="azure2",foreground="black",fieldbackground="azure2")
 
-# class for frame control
 class FrameController(TextFrame, TreeFrame):
     def __init__(self, main):
         #super().__init__(main) # I can't access TreeFrame attribute when using super()
@@ -34,7 +31,6 @@ class FrameController(TextFrame, TreeFrame):
         TreeFrame.__init__(self,main)
         self.content_data = dict() #dictionay for [text] = [hash,tabname,filepath]
 
-    #create text in nb
     def create_file(self,content = "",title="Untitled", filepath = ""):
         text_area = tk.Text(self.nb, wrap="none", undo=True)
         text_area.insert("1.0",content)
@@ -45,7 +41,6 @@ class FrameController(TextFrame, TreeFrame):
         # collect the data using the content_data dictionay
         self.content_data[str(text_area)] = [hash(content),self.nb.tab("current")["text"], filepath]
 
-    #open file
     def open_file(self):
         path = askopenfilename(filetypes=[("Python Files","*.py")])
         filename = os.path.basename(path)
@@ -58,7 +53,6 @@ class FrameController(TextFrame, TreeFrame):
             code = file.read()
         self.create_file(code,filename,path)
 
-    # open folder
     def openfolder(self):
         directory = askdirectory()
         if directory: #to avoid error when cancelation
@@ -81,7 +75,6 @@ class FrameController(TextFrame, TreeFrame):
             except FileNotFoundError as error:
                 showerror(title='Error', message=error)
 
-    # select from opened folder
     def select_file(self):
         try:
             curItem = self.tree.focus()
@@ -115,7 +108,6 @@ class FrameController(TextFrame, TreeFrame):
         selected_nb = main.nametowidget(self.nb.select())
         return selected_nb
 
-    # checker for changes
     def change_checker(self):
         current = self.select_nb_tab()
         content = current.get("1.0","end-1c")
@@ -156,9 +148,7 @@ class FrameController(TextFrame, TreeFrame):
             self.content_data[str(current_tab)][0] = hash(content)
         else:
             self.save_as()
-        #self.check_for_changes()
 
-    # close the current selected tab
     def close_current_tab(self):
 
         current = self.select_nb_tab()
@@ -175,7 +165,6 @@ class FrameController(TextFrame, TreeFrame):
         content = get_content_text.get("1.0","end-1c")
         return hash(content) != self.content_data[str(get_content_text)][0] # return true if tab is not save_as
 
-    # check confim to close
     def confirm_close(self):
         return messagebox.askyesno(
             message="Your changes will be lost if you close without saving. Are you sure you want to close?",
@@ -183,7 +172,6 @@ class FrameController(TextFrame, TreeFrame):
             title="Unsave changes"
         )
 
-    # selecl all text area
     def select_all(self):
 
         get_content_text = self.select_nb_tab()
@@ -239,7 +227,7 @@ class FrameController(TextFrame, TreeFrame):
             self.save_as()
             return
 
-        command = f"python3 {filepath}" #
+        command = f"python3 {filepath}" 
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell= True,text = True)
         output, error = process.communicate()
 
@@ -268,7 +256,6 @@ class FrameController(TextFrame, TreeFrame):
         get_content_text = self.select_nb_tab()
         get_content_text.tag_delete("error_area")
 
-# class for menu
 class MenuBar(tk.Menu):
     def __init__(self, main):
         super().__init__(main)
@@ -313,8 +300,7 @@ class MenuBar(tk.Menu):
         self.view_bar = tk.Menu(self,tearoff=0)
         self.view_bar.add_checkbutton(label = "Folder")
         self.add_cascade(label = "View", menu = self.view_bar)
-
-# main class
+        
 class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
