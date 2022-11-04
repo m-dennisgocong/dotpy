@@ -17,10 +17,15 @@ dotpy is an IDE application for Python 3, build using Tkinter GUI toolkit. This 
 - Frame
 - Text
 
-## Modules
+## Modules 
 - os
 - tkinter
 - subprocess
+
+## Demo Link
+Run the code live in your browser make sure to run it on fullscreen: 
+https://replit.com/@m-dennisgocong/dotpy#main.py 
+
 
 ## Run Locally
 
